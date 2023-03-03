@@ -1,4 +1,5 @@
 import React, { useEffect, useRef } from "react";
+import PulseLoader from "react-spinners/PulseLoader";
 
 type MessageType = {
   message: string;
@@ -7,8 +8,10 @@ type MessageType = {
 
 export default function MessageContainer({
   messages,
+  loading,
 }: {
   messages: MessageType[];
+  loading: boolean;
 }) {
   const scrollRef = useRef<any>(null);
 
@@ -46,6 +49,11 @@ export default function MessageContainer({
           </div>
         );
       })}
+      {loading && (
+        <div className="">
+          <PulseLoader color="#58335e" size={8} />
+        </div>
+      )}
     </div>
   );
 }

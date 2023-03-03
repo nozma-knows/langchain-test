@@ -5,7 +5,7 @@ import TextField from "@/components/ui/form-fields/TextField";
 import Button from "@/components/ui/buttons/Button";
 import MessageContainer from "@/components/feature-chat-bot/ui/MessageContainer";
 
-const title = `Chat Bot coming soon!`;
+const title = `Chat Bot`;
 
 type DataType = {
   result: string;
@@ -132,7 +132,7 @@ const ChatBotForm = ({
         control={control}
         name="prompt"
         type="text"
-        placeholder="What would you like to say?"
+        placeholder={`${messages.length ? "" : "Introduce yourself!"}`}
         required="Message is required."
         errors={errors}
       />
@@ -159,8 +159,8 @@ export default function ChatBot() {
     <Page>
       <div className="flex w-full justify-center pb-4">
         <div className="flex flex-col items-center w-full max-w-2xl gap-4">
-          <h1 className="text-4xl font-bold">{title}</h1>
-          <MessageContainer messages={messages} />
+          <h1 className="text-4xl font-bold text-center">{title}</h1>
+          <MessageContainer messages={messages} loading={loading} />
           <ChatBotForm
             messages={messages}
             setMessages={setMessages}
