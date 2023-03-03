@@ -46,7 +46,6 @@ export default async function handler(
 
   try {
     const result = await chain.call({ input: prompt });
-    console.log("noah - generate-response.tsx - response: ", result.response);
     res.status(200).json({
       result: result.response || null,
       error: null,

@@ -1,9 +1,9 @@
-import React, { useState } from "react";
+import React, { useState, useEffect, useRef } from "react";
 import { FieldValues, useForm, UseFormSetValue } from "react-hook-form";
-import { Box, Grid } from "@mui/material";
 import Page from "@/components/ui/page/Page";
 import TextField from "@/components/ui/form-fields/TextField";
 import Button from "@/components/ui/buttons/Button";
+import MessageContainer from "@/components/feature-chat-bot/ui/MessageContainer";
 
 const title = `Chat Bot coming soon!`;
 
@@ -20,14 +20,71 @@ type MessageType = {
 };
 
 interface OnSubmitProps {
-  prompt: FieldValues;
-  messages: string[];
-  setMessages: (messages: string[]) => void;
+  prompt: any;
+  messages: MessageType[];
+  setMessages: (messages: MessageType[]) => void;
   setValue: UseFormSetValue<FieldValues>;
   setLoading: (loading: boolean) => void;
 }
 
-// Submit function
+const addUserMessage = ({
+  prompt,
+  messages,
+  setMessages,
+  setValue,
+}: {
+  prompt: any;
+  messages: MessageType[];
+  setMessages: (messages: MessageType[]) => void;
+  setValue: any;
+}) => {
+  setMessages([
+    ...messages,
+    {
+      message: prompt,
+      sender: "user",
+    },
+  ]);
+  setValue("prompt", "");
+};
+
+const grabResponse = async ({
+  prompt,
+  messages,
+  setMessages,
+  setLoading,
+}: {
+  prompt: string;
+  messages: MessageType[];
+  setMessages: (messages: MessageType[]) => void;
+  setLoading: (loading: boolean) => void;
+}) => {
+  try {
+    console.log("prompt: ", prompt);
+    const response = await fetch("api/chat-bot-response", {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json",
+      },
+      body: JSON.stringify({ prompt }),
+    });
+    console.log("response: ", response);
+    const data = await response.json();
+    setMessages([
+      ...messages,
+      {
+        message: data.result,
+        sender: "bot",
+      },
+    ]);
+    setLoading(false);
+  } catch (error) {
+    console.error("Error submitting prompt: ", error);
+    setLoading(false);
+  }
+  setLoading(false);
+};
+
 const onSubmit = async ({
   prompt,
   messages,
@@ -36,43 +93,21 @@ const onSubmit = async ({
   setLoading,
 }: OnSubmitProps) => {
   setLoading(true);
-  try {
-    const response = await fetch("api/simple-prompt-response", {
-      method: "POST",
-      headers: {
-        "Content-Type": "application/json",
-      },
-      body: JSON.stringify(prompt),
-    });
-    console.log("response: ", response);
-    const data = await response.json();
-    setMessages([...messages, data.result]);
-    setLoading(false);
-  } catch (error) {
-    console.error("Error submitting prompt: ", error);
-    setLoading(false);
-  }
-};
-
-const MessageContainer = ({ messages }: { messages: string[] }) => {
-  return (
-    <div className="flex flex-col w-full h-full border-2 p-4 rounded-xl">
-      {messages.map((message, index) => {
-        return <div key={index}>{message}</div>;
-      })}
-    </div>
-  );
+  addUserMessage({ prompt, messages, setMessages, setValue });
 };
 
 const ChatBotForm = ({
   messages,
   setMessages,
+  loading,
+  setLoading,
 }: {
-  messages: string[];
-  setMessages: (messages: string[]) => void;
+  messages: MessageType[];
+  setMessages: (messages: MessageType[]) => void;
+  loading: boolean;
+  setLoading: (loading: boolean) => void;
 }) => {
   // Variables
-  const [loading, setLoading] = useState(false);
 
   // React Hook Form variables
   const {
@@ -80,12 +115,16 @@ const ChatBotForm = ({
     formState: { errors },
     handleSubmit,
     setValue,
-  } = useForm<FieldValues>();
+  } = useForm<FieldValues>({
+    defaultValues: {
+      prompt: "",
+    },
+  });
 
   return (
     <form
       className="flex w-full gap-4 items-center"
-      onSubmit={handleSubmit((prompt: FieldValues) =>
+      onSubmit={handleSubmit(({ prompt }) =>
         onSubmit({ prompt, messages, setMessages, setValue, setLoading })
       )}
     >
@@ -98,18 +137,23 @@ const ChatBotForm = ({
         errors={errors}
       />
       <div className="pb-5">
-        <Button label="Send" loading={loading} className="p-2" />
+        <Button label="Send" disabled={loading} className="flex py-2" />
       </div>
     </form>
   );
 };
 
 export default function ChatBot() {
-  const [messages, setMessages] = useState<string[]>([
-    "Test 1",
-    "Test 2",
-    "Test 3",
-  ]);
+  const [messages, setMessages] = useState<MessageType[]>([]);
+  const [loading, setLoading] = useState(false);
+
+  useEffect(() => {
+    if (messages.length && messages[messages.length - 1].sender === "user") {
+      const prompt = messages[messages.length - 1].message;
+      grabResponse({ prompt, messages, setMessages, setLoading });
+    }
+    console.log("HERE");
+  }, [messages, setMessages]);
 
   return (
     <Page>
@@ -117,7 +161,12 @@ export default function ChatBot() {
         <div className="flex flex-col items-center w-full max-w-2xl gap-4">
           <h1 className="text-4xl font-bold">{title}</h1>
           <MessageContainer messages={messages} />
-          <ChatBotForm messages={messages} setMessages={setMessages} />
+          <ChatBotForm
+            messages={messages}
+            setMessages={setMessages}
+            loading={loading}
+            setLoading={setLoading}
+          />
         </div>
       </div>
     </Page>
