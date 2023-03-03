@@ -2,6 +2,7 @@ import React, { useState } from "react";
 import { FieldValues, useForm, UseFormSetValue } from "react-hook-form";
 import Page from "@/components/ui/page/Page";
 import TextField from "@/components/ui/form-fields/TextField";
+import Button from "@/components/ui/buttons/Button";
 
 const title = `Simple Prompt`;
 
@@ -77,12 +78,7 @@ export default function SimplePrompt() {
             required="Prompt is required."
             errors={errors}
           />
-          <input
-            className="cursor-pointer border-2 w-fit py-2 px-4 rounded-full hover:scale-110"
-            type="submit"
-            value={loading ? "Loading..." : "Submit Prompt"}
-            disabled={loading}
-          />
+          <Button label="Submit prompt" loading={loading} />
           {data && (
             <div>
               <div>{data.result || data.error.message}</div>

@@ -29,7 +29,7 @@ export default function Button({
         ${className}`}
       >
         {loading ? (
-          <PulseLoader color="white" size={8} />
+          <PulseLoader color="#58335e" size={8} />
         ) : (
           <span className="font-semibold">{label || defaultLabel}</span>
         )}
