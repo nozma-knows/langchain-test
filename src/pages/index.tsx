@@ -12,8 +12,8 @@ export default function Home() {
         <div className="">
           <LinkButton
             className="text-sm sm:text-base bg-main-light p-4 rounded-xl button text-main-light font-bold"
-            label="Try out Simple Prompt"
-            href="/simple-prompt"
+            label="Try out the Chat Bot!"
+            href="/chat-bot"
           />
         </div>
       </div>
